@@ -1,0 +1,1152 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Angry Beards · Automat na klíč</title>
+<link href="https://fonts.googleapis.com/css2?family=Bebas+Neue&family=DM+Sans:wght@300;400;500;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --black: #080808;
+    --dark: #111111;
+    --card: #161616;
+    --gold: #C9A84C;
+    --gold-light: #E8C878;
+    --white: #F5F5F0;
+    --gray: #666666;
+    --lgray: #999999;
+    --border: #222222;
+  }
+
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+  html { scroll-behavior: smooth; }
+
+  body {
+    background: var(--black);
+    color: var(--white);
+    font-family: 'DM Sans', sans-serif;
+    font-weight: 400;
+    overflow-x: hidden;
+    cursor: none;
+  }
+
+  /* Custom cursor */
+  .cursor {
+    width: 8px; height: 8px;
+    background: var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9999;
+    transition: transform 0.15s ease;
+    mix-blend-mode: difference;
+  }
+  .cursor-ring {
+    width: 32px; height: 32px;
+    border: 1px solid var(--gold);
+    border-radius: 50%;
+    position: fixed;
+    pointer-events: none;
+    z-index: 9998;
+    transition: all 0.08s ease;
+    opacity: 0.5;
+  }
+
+  /* Nav */
+  nav {
+    position: fixed;
+    top: 0; left: 0; right: 0;
+    z-index: 100;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 20px 48px;
+    background: linear-gradient(to bottom, rgba(8,8,8,0.95), transparent);
+    backdrop-filter: blur(8px);
+  }
+
+  .nav-logo {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 4px;
+    color: var(--gold);
+  }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    text-decoration: none;
+    color: var(--gray);
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    transition: color 0.3s;
+  }
+
+  .nav-links a:hover { color: var(--gold); }
+
+  /* Sections */
+  section {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    padding: 120px 48px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .container { max-width: 1100px; margin: 0 auto; width: 100%; }
+
+  /* Section label */
+  .label {
+    font-size: 10px;
+    letter-spacing: 4px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 24px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .label::before {
+    content: '';
+    display: block;
+    width: 32px;
+    height: 1px;
+    background: var(--gold);
+  }
+
+  /* ── HERO ── */
+  #hero {
+    background: var(--black);
+    min-height: 100vh;
+  }
+
+  .hero-inner {
+    position: relative;
+    z-index: 2;
+  }
+
+  .hero-tag {
+    display: inline-block;
+    border: 1px solid var(--border);
+    padding: 6px 16px;
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--lgray);
+    margin-bottom: 40px;
+    animation: fadeUp 0.8s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-h1 {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(80px, 13vw, 160px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+    animation: fadeUp 0.8s 0.15s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-h1 span { color: var(--gold); display: block; }
+
+  .hero-sub {
+    margin-top: 40px;
+    font-size: 16px;
+    color: var(--lgray);
+    max-width: 480px;
+    line-height: 1.7;
+    animation: fadeUp 0.8s 0.3s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-line {
+    width: 80px;
+    height: 1px;
+    background: var(--gold);
+    margin: 32px 0;
+    animation: expandWidth 1s 0.5s ease forwards;
+    transform-origin: left;
+    transform: scaleX(0);
+  }
+
+  .hero-meta {
+    display: flex;
+    gap: 48px;
+    animation: fadeUp 0.8s 0.45s ease forwards;
+    opacity: 0;
+  }
+
+  .hero-meta-item label {
+    display: block;
+    font-size: 9px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 4px;
+  }
+
+  .hero-meta-item span {
+    font-size: 14px;
+    color: var(--white);
+    font-weight: 500;
+  }
+
+  .hero-bg-text {
+    position: absolute;
+    right: -40px;
+    top: 50%;
+    transform: translateY(-50%);
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 320px;
+    color: transparent;
+    -webkit-text-stroke: 1px rgba(201, 168, 76, 0.04);
+    pointer-events: none;
+    line-height: 1;
+    white-space: nowrap;
+  }
+
+  /* ── PŘÍLEŽITOST ── */
+  #prilezitost { background: var(--dark); }
+
+  .two-col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 80px;
+    align-items: center;
+  }
+
+  .big-text {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(48px, 6vw, 80px);
+    line-height: 1;
+    letter-spacing: 1px;
+  }
+
+  .big-text .gold { color: var(--gold); }
+
+  .prose {
+    font-size: 15px;
+    color: var(--lgray);
+    line-height: 1.8;
+  }
+
+  .prose p + p { margin-top: 16px; }
+
+  .stat-box {
+    margin-top: 40px;
+    display: inline-flex;
+    flex-direction: column;
+    border-left: 2px solid var(--gold);
+    padding-left: 20px;
+  }
+
+  .stat-box .num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 72px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-box .desc {
+    font-size: 12px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  /* ── REFERENCE ── */
+  #reference { background: var(--black); }
+
+  .ref-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+    margin-top: 56px;
+  }
+
+  .ref-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease, border-color 0.3s ease;
+  }
+
+  .ref-card::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0;
+    width: 3px;
+    height: 100%;
+    background: var(--gold);
+  }
+
+  .ref-card:hover {
+    transform: translateY(-4px);
+    border-color: var(--gold);
+  }
+
+  .ref-brand {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 22px;
+    letter-spacing: 2px;
+    color: var(--white);
+    margin-bottom: 4px;
+  }
+
+  .ref-category {
+    font-size: 10px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 24px;
+  }
+
+  .ref-stat {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 48px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .ref-stat-label {
+    font-size: 11px;
+    color: var(--lgray);
+    margin-top: 4px;
+    margin-bottom: 20px;
+  }
+
+  .ref-detail {
+    font-size: 12px;
+    color: var(--gray);
+    line-height: 1.7;
+    border-top: 1px solid var(--border);
+    padding-top: 16px;
+  }
+
+  /* ── NABÍDKA ── */
+  #nabidka { background: var(--dark); }
+
+  .pricing-wrap {
+    display: grid;
+    grid-template-columns: 1fr 1.2fr;
+    gap: 80px;
+    align-items: start;
+    margin-top: 56px;
+  }
+
+  .price-table { width: 100%; }
+
+  .price-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    font-size: 14px;
+  }
+
+  .price-row .name { color: var(--lgray); }
+  .price-row .val { color: var(--white); font-weight: 500; }
+
+  .price-total {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 24px 0;
+    margin-top: 8px;
+  }
+
+  .price-total .name {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 24px;
+    letter-spacing: 2px;
+    color: var(--gold);
+  }
+
+  .price-total .val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 36px;
+    color: var(--gold);
+  }
+
+  .included-title {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-bottom: 20px;
+  }
+
+  .included-list { list-style: none; }
+
+  .included-list li {
+    display: flex;
+    gap: 16px;
+    padding: 16px 0;
+    border-bottom: 1px solid var(--border);
+    align-items: flex-start;
+  }
+
+  .included-list li:last-child { border-bottom: none; }
+
+  .included-list .icon {
+    width: 32px;
+    height: 32px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.2);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+
+  .included-list .item-title {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--white);
+    margin-bottom: 2px;
+  }
+
+  .included-list .item-desc {
+    font-size: 11px;
+    color: var(--gray);
+  }
+
+  /* ── FINANČNÍ MODEL ── */
+  #financni-model { background: var(--black); }
+
+  .finance-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 80px;
+    align-items: start;
+    margin-top: 56px;
+  }
+
+  .pl-table { width: 100%; }
+
+  .pl-row {
+    display: flex;
+    justify-content: space-between;
+    padding: 12px 0;
+    font-size: 14px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .pl-row .pl-label { color: var(--lgray); }
+  .pl-row .pl-val { color: var(--white); }
+  .pl-row.expense .pl-val { color: var(--lgray); }
+
+  .pl-total-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--gold);
+    padding: 18px 20px;
+    margin-top: 8px;
+  }
+
+  .pl-total-row .pl-label {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 18px;
+    letter-spacing: 2px;
+    color: var(--black);
+  }
+
+  .pl-total-row .pl-val {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    color: var(--black);
+  }
+
+  .stats-stack {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+  }
+
+  .stat-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 28px;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .stat-card::after {
+    content: '';
+    position: absolute;
+    bottom: 0; left: 0;
+    width: 100%;
+    height: 2px;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.4s ease;
+  }
+
+  .stat-card:hover::after { transform: scaleX(1); }
+
+  .stat-card .s-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 52px;
+    color: var(--gold);
+    line-height: 1;
+  }
+
+  .stat-card .s-label {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gray);
+    margin-top: 4px;
+  }
+
+  .finance-claim {
+    margin-top: 48px;
+    padding: 28px 32px;
+    background: var(--card);
+    border-left: 3px solid var(--gold);
+    grid-column: 1 / -1;
+  }
+
+  .finance-claim p {
+    font-size: 15px;
+    color: var(--lgray);
+    line-height: 1.7;
+    font-style: italic;
+  }
+
+  .finance-claim strong { color: var(--gold); font-style: normal; }
+
+  /* ── CO TO PŘINESE ── */
+  #prinosy { background: var(--dark); }
+
+  .benefits-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 32px;
+    margin-top: 56px;
+  }
+
+  .benefit-card {
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 40px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
+  }
+
+  .benefit-card:hover { transform: translateY(-4px); }
+
+  .benefit-num {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 80px;
+    color: rgba(201,168,76,0.08);
+    position: absolute;
+    top: 16px;
+    right: 24px;
+    line-height: 1;
+    pointer-events: none;
+  }
+
+  .benefit-icon {
+    width: 40px;
+    height: 40px;
+    background: rgba(201,168,76,0.1);
+    border: 1px solid rgba(201,168,76,0.3);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    margin-bottom: 20px;
+  }
+
+  .benefit-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--white);
+    margin-bottom: 12px;
+  }
+
+  .benefit-desc {
+    font-size: 14px;
+    color: var(--lgray);
+    line-height: 1.8;
+  }
+
+  .benefit-tags {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin-top: 20px;
+  }
+
+  .benefit-tag {
+    font-size: 10px;
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: var(--gray);
+  }
+
+  /* ── ČASOVÁ OSA ── */
+  #casova-osa { background: var(--black); }
+
+  .timeline {
+    margin-top: 56px;
+    position: relative;
+    padding-left: 40px;
+  }
+
+  .timeline::before {
+    content: '';
+    position: absolute;
+    left: 8px;
+    top: 12px;
+    bottom: 12px;
+    width: 1px;
+    background: var(--border);
+  }
+
+  .timeline-item {
+    position: relative;
+    padding-bottom: 48px;
+  }
+
+  .timeline-item:last-child { padding-bottom: 0; }
+
+  .timeline-dot {
+    position: absolute;
+    left: -36px;
+    top: 4px;
+    width: 16px;
+    height: 16px;
+    background: var(--gold);
+    border-radius: 50%;
+    border: 3px solid var(--black);
+  }
+
+  .timeline-period {
+    font-size: 10px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .timeline-title {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: 28px;
+    letter-spacing: 1px;
+    color: var(--white);
+    margin-bottom: 8px;
+  }
+
+  .timeline-desc {
+    font-size: 14px;
+    color: var(--lgray);
+    line-height: 1.7;
+    max-width: 600px;
+  }
+
+  .servis-box {
+    margin-top: 64px;
+    background: var(--card);
+    border: 1px solid var(--border);
+    padding: 32px 40px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 32px;
+  }
+
+  .servis-item .s-title {
+    font-size: 11px;
+    letter-spacing: 2px;
+    text-transform: uppercase;
+    color: var(--gold);
+    margin-bottom: 8px;
+  }
+
+  .servis-item .s-text {
+    font-size: 13px;
+    color: var(--lgray);
+    line-height: 1.6;
+  }
+
+  /* ── CTA ── */
+  #cta {
+    background: var(--dark);
+    text-align: center;
+    justify-content: center;
+  }
+
+  .cta-inner { max-width: 700px; margin: 0 auto; }
+
+  .cta-h {
+    font-family: 'Bebas Neue', sans-serif;
+    font-size: clamp(64px, 10vw, 120px);
+    line-height: 0.9;
+    letter-spacing: 2px;
+  }
+
+  .cta-h span { color: var(--gold); display: block; }
+
+  .cta-sub {
+    font-size: 16px;
+    color: var(--lgray);
+    margin-top: 28px;
+    margin-bottom: 48px;
+    line-height: 1.7;
+  }
+
+  .cta-line {
+    width: 60px;
+    height: 1px;
+    background: var(--gold);
+    margin: 32px auto;
+  }
+
+  .cta-contact {
+    display: inline-block;
+    border: 1px solid var(--gold);
+    padding: 14px 40px;
+    font-size: 12px;
+    letter-spacing: 3px;
+    text-transform: uppercase;
+    color: var(--gold);
+    text-decoration: none;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+  }
+
+  .cta-contact::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: var(--gold);
+    transform: scaleX(0);
+    transform-origin: left;
+    transition: transform 0.3s ease;
+    z-index: -1;
+  }
+
+  .cta-contact:hover {
+    color: var(--black);
+  }
+
+  .cta-contact:hover::before { transform: scaleX(1); }
+
+  .cta-footer {
+    margin-top: 64px;
+    font-size: 11px;
+    color: var(--gray);
+    letter-spacing: 1px;
+  }
+
+  /* Animations */
+  @keyframes fadeUp {
+    from { opacity: 0; transform: translateY(24px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  @keyframes expandWidth {
+    from { transform: scaleX(0); }
+    to { transform: scaleX(1); }
+  }
+
+  .reveal {
+    opacity: 0;
+    transform: translateY(32px);
+    transition: opacity 0.7s ease, transform 0.7s ease;
+  }
+
+  .reveal.visible {
+    opacity: 1;
+    transform: translateY(0);
+  }
+
+  /* Scrollbar */
+  ::-webkit-scrollbar { width: 3px; }
+  ::-webkit-scrollbar-track { background: var(--black); }
+  ::-webkit-scrollbar-thumb { background: var(--gold); }
+
+</style>
+</head>
+<body>
+
+<div class="cursor" id="cursor"></div>
+<div class="cursor-ring" id="cursorRing"></div>
+
+<nav>
+  <div class="nav-logo">SMVending</div>
+  <ul class="nav-links">
+    <li><a href="#prilezitost">Příležitost</a></li>
+    <li><a href="#reference">Reference</a></li>
+    <li><a href="#nabidka">Nabídka</a></li>
+    <li><a href="#financni-model">Čísla</a></li>
+
+  </ul>
+</nav>
+
+<!-- HERO -->
+<section id="hero" style="padding-top: 100px; align-items: center; min-height: 100vh;">
+  <div class="container" style="display: grid; grid-template-columns: 1fr 1fr; gap: 60px; align-items: center;">
+    <div class="hero-inner" style="position: relative; z-index: 2;">
+      <div class="hero-tag">Důvěrná nabídka 2025</div>
+      <h1 class="hero-h1">
+        AUTOMAT
+        <span>NA KLÍČ.</span>
+      </h1>
+      <div class="hero-line"></div>
+      <p class="hero-sub">Offline touchpoint pro Angry Beards, který na sebe vydělá sám a zároveň funguje jako ultimátní marketingový nástroj.</p>
+      <div class="hero-meta">
+        <div class="hero-meta-item">
+          <label>Připraveno pro</label>
+          <span>Angry Beards</span>
+        </div>
+        <div class="hero-meta-item">
+          <label>Investice</label>
+          <span>280 000 Kč</span>
+        </div>
+        <div class="hero-meta-item">
+          <label>Návratnost</label>
+          <span>cca 8 měsíců</span>
+        </div>
+      </div>
+    </div>
+    <div style="position: relative; z-index: 2; display: flex; justify-content: center;">
+      <img src="automat_angrybeards.png" alt="Angry Beards automat" style="width: 100%; max-height: 85vh; object-fit: contain; filter: drop-shadow(0 0 60px rgba(201,168,76,0.2));">
+    </div>
+  </div>
+</section>
+
+<!-- PŘÍLEŽITOST -->
+<section id="prilezitost">
+  <div class="container">
+    <div class="two-col">
+      <div class="reveal">
+        <div class="label">01 · Příležitost</div>
+        <div class="big-text">
+          Žádná<br>prodejna.<br>
+          <span class="gold">Žádný<br>offline.</span>
+        </div>
+        <div class="stat-box">
+          <span class="num">#1</span>
+          <span class="desc">v kosmetice to místo je vaše</span>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay: 0.15s">
+        <div class="prose">
+          <p>Angry Beards je silný brand, ale čistě online. Zákazník nemá kde si na vás sáhnout, vyfotit se nebo nakoupit impulzivně mimo e-shop.</p>
+          <p>Automat to mění. Jste tam, kde jsou vaši zákazníci v nákupních centrech a na místech s vysokou frekvencí lidí.</p>
+          <p>Lidé dnes nechtějí čekat. Když jdou okolo a cena je rozumná, koupí na místě. YSL to dělá v zahraničí, Krásné vůně mají 23 automatů a Veiny Galaxy spustili první automat v prosinci a hned v březnu přidali druhý.</p>
+          <p><strong style="color: var(--white)">V kosmetice v Čechách to ještě nikdo ve velkém nedělá. Okno příležitosti je otevřené.</strong></p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- REFERENCE -->
+<section id="reference">
+  <div class="container">
+    <div class="reveal">
+      <div class="label">02 · Reference</div>
+      <div class="big-text">Funguje to.<br><span class="gold">Máme důkazy.</span></div>
+    </div>
+    <div class="ref-grid">
+      <div class="ref-card reveal" style="transition-delay: 0.1s">
+        <div class="ref-brand">Veiny Galaxy</div>
+        <div class="ref-category">Suplementy, vending automat</div>
+        <div class="ref-stat">137 609</div>
+        <div class="ref-stat-label">Kč obrat první měsíc</div>
+        <div class="ref-detail">
+          Průměr 120 000 Kč za měsíc, průměrná objednávka 696 Kč, nejlepší den přes 13 000 Kč.<br><br>
+          <strong style="color: var(--white)">Prosinec 2024 až březen 2025:</strong><br>
+          Jeden automat, pak druhý, teď plánují další.
+        </div>
+      </div>
+      <div class="ref-card reveal" style="transition-delay: 0.2s">
+        <div class="ref-brand">Krásné vůně</div>
+        <div class="ref-category">Parfumy, český trh</div>
+        <div class="ref-stat">23</div>
+        <div class="ref-stat-label">automatů v provozu</div>
+        <div class="ref-detail">
+          Parfumy v automatech, kategorie, které by nikdo nevěřil.<br><br>
+          Český trh, reálná čísla, funguje dlouhodobě. Přímá analogie pro kosmetický brand.
+        </div>
+      </div>
+      <div class="ref-card reveal" style="transition-delay: 0.3s">
+        <div class="ref-brand">YSL Beauty</div>
+        <div class="ref-category">Prémiová kosmetika, zahraničí</div>
+        <div class="ref-stat">✓</div>
+        <div class="ref-stat-label">prémiová kosmetika v automatu jde</div>
+        <div class="ref-detail">
+          Luxusní kosmetika v automatech v zahraničí funguje.<br><br>
+          Lidé kupují i drahé produkty z automatu. Rozhoduje správné umístění a silný brand.
+        </div>
+      </div>
+    </div>
+    <div class="reveal" style="margin-top: 40px; text-align: center;">
+      <p style="font-size: 13px; color: var(--gray);">Více o našich automatech na <a href="https://www.smartvending.cz" target="_blank" style="color: var(--gold); text-decoration: none;">www.smartvending.cz</a> nebo <a href="https://www.instagram.com/klukodmatu" target="_blank" style="color: var(--gold); text-decoration: none;">@klukodmatu</a></p>
+    </div>
+  </div>
+</section>
+<section id="nabidka">
+  <div class="container">
+    <div class="reveal">
+      <div class="label">03 · Nabídka</div>
+      <div class="big-text">Vše <span class="gold">na klíč.</span></div>
+    </div>
+    <div class="pricing-wrap">
+      <div class="reveal" style="transition-delay: 0.1s">
+        <table class="price-table">
+          <tr class="price-row">
+            <td class="name">Automat Smart22L vč. terminálu</td>
+            <td class="val">209 500 Kč</td>
+          </tr>
+          <tr class="price-row">
+            <td class="name">Kampaň na klíč</td>
+            <td class="val">70 500 Kč</td>
+          </tr>
+        </table>
+        <div class="price-total">
+          <span class="name">Celkem</span>
+          <span class="val">280 000 Kč</span>
+        </div>
+      </div>
+      <div class="reveal" style="transition-delay: 0.2s">
+        <div class="included-title">Co je součástí kampaně na klíč</div>
+        <ul class="included-list">
+          <li>
+            <div class="icon">📍</div>
+            <div>
+              <div class="item-title">Hledání a zajištění lokace</div>
+              <div class="item-desc">Průzkum míst, jednání s centrem, podpis smlouvy</div>
+            </div>
+          </li>
+          <li>
+            <div class="icon">🎨</div>
+            <div>
+              <div class="item-title">Branding a grafika automatu</div>
+              <div class="item-desc">Design polepů a vizuální identita</div>
+            </div>
+          </li>
+          <li>
+            <div class="icon">📱</div>
+            <div>
+              <div class="item-title">Marketingová strategie a content plán</div>
+              <div class="item-desc">Plán obsahu, soutěže a video materiály pro FB Ads</div>
+            </div>
+          </li>
+          <li>
+            <div class="icon">🎉</div>
+            <div>
+              <div class="item-title">Slavnostní otevírací kampaň</div>
+              <div class="item-desc">Launch event a online i offline obsah</div>
+            </div>
+          </li>
+          <li>
+            <div class="icon">📚</div>
+            <div>
+              <div class="item-title">Zaučení a předání</div>
+              <div class="item-desc">Vše připraveno, vy jen doplňujete zboží</div>
+            </div>
+          </li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- FINANČNÍ MODEL -->
+<section id="financni-model">
+  <div class="container">
+    <div class="reveal">
+      <div class="label">04 · Finanční model</div>
+      <div class="big-text">Čísla která<br><span class="gold">mluví za sebe.</span></div>
+    </div>
+    <div class="finance-grid">
+      <div class="reveal" style="transition-delay: 0.1s">
+        <div style="font-size:10px;letter-spacing:3px;text-transform:uppercase;color:var(--gray);margin-bottom:16px">Měsíční P&L · 1 automat</div>
+        <table class="pl-table">
+          <tr class="pl-row">
+            <td class="pl-label">Obrat</td>
+            <td class="pl-val">90 000 Kč</td>
+          </tr>
+          <tr class="pl-row">
+            <td class="pl-label">Marže 50 %</td>
+            <td class="pl-val">45 000 Kč</td>
+          </tr>
+          <tr class="pl-row expense">
+            <td class="pl-label">Nájem</td>
+            <td class="pl-val">− 8 000 Kč</td>
+          </tr>
+          <tr class="pl-row expense">
+            <td class="pl-label">Energie</td>
+            <td class="pl-val">− 300 Kč</td>
+          </tr>
+          <tr class="pl-row expense">
+            <td class="pl-label">Software</td>
+            <td class="pl-val">− 699 Kč</td>
+          </tr>
+          <tr class="pl-row expense">
+            <td class="pl-label">Poplatky za platby (1,5 %)</td>
+            <td class="pl-val">− 1 350 Kč</td>
+          </tr>
+        </table>
+        <div class="pl-total-row">
+          <span class="pl-label">Čistý zisk</span>
+          <span class="pl-val">34 651 Kč</span>
+        </div>
+      </div>
+      <div class="stats-stack reveal" style="transition-delay: 0.2s">
+        <div class="stat-card">
+          <div class="s-num">280 000</div>
+          <div class="s-label">Kč celková investice</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-num">cca 8</div>
+          <div class="s-label">měsíců návratnost</div>
+        </div>
+        <div class="stat-card">
+          <div class="s-num">34 651</div>
+          <div class="s-label">Kč čistý zisk měsíčně</div>
+        </div>
+      </div>
+      <div class="finance-claim reveal">
+        <p>S vaším brandem a pořádným marketingem, slavnostní otevírací kampaní, contentem a aktivacemi <strong>uděláme z tohohle rekordní automat.</strong> Automatová revoluce začíná a pak to bude chtít každý.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- CO TO PŘINESE -->
+<section id="prinosy">
+  <div class="container">
+    <div class="reveal">
+      <div class="label">05 · Přínosy</div>
+      <div class="big-text">Dva důvody.<br><span class="gold">Jeden automat.</span></div>
+    </div>
+    <div class="benefits-grid">
+      <div class="benefit-card reveal" style="transition-delay: 0.1s">
+        <div class="benefit-num">01</div>
+        <div class="benefit-icon">💰</div>
+        <div class="benefit-title">Nástroj, který na sebe vydělá</div>
+        <div class="benefit-desc">Díky vaší vysoké marži automat rychle pokryje investici, zejména pokud společně spustíme silnou kampaň a vytvoříme obsah okolo automatu. Návratnost za cca 8 měsíců a pak čistý zisk každý měsíc.</div>
+        <div class="benefit-tags">
+          <span class="benefit-tag">50 % marže</span>
+          <span class="benefit-tag">34 651 Kč měsíčně</span>
+          <span class="benefit-tag">návratnost cca 8 měs.</span>
+        </div>
+      </div>
+      <div class="benefit-card reveal" style="transition-delay: 0.2s">
+        <div class="benefit-num">02</div>
+        <div class="benefit-icon">📣</div>
+        <div class="benefit-title">Marketingový nástroj</div>
+        <div class="benefit-desc">Automaty jsou inovace. U našich klientů vždy generují interakce a views a lidi si to pamatují. S vaším brandem a komunitou okolo toho uděláme hodně parády.</div>
+        <div class="benefit-tags">
+          <span class="benefit-tag">Launch event</span>
+          <span class="benefit-tag">Reels a UGC</span>
+          <span class="benefit-tag">FB Ads materiál</span>
+          <span class="benefit-tag">Brand awareness</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ČASOVÁ OSA -->
+<section id="casova-osa">
+  <div class="container">
+    <div class="reveal">
+      <div class="label">06 · Jak to funguje</div>
+      <div class="big-text">Od podpisu<br><span class="gold">po spuštění: 5–12 týdnů.</span></div>
+    </div>
+    <div class="timeline reveal" style="margin-top: 56px">
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-period">Týden 1 až 10</div>
+        <div class="timeline-title">Hledání lokace</div>
+        <div class="timeline-desc">Průzkum míst, jednání s nákupním centrem a podpis smlouvy. Souběžně tvoříme grafiku automatu a marketingovou strategii. Délka závisí na dostupnosti lokace, typicky 5 až 12 týdnů celkem.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot"></div>
+        <div class="timeline-period">Poslední 2 týdny</div>
+        <div class="timeline-title">Příprava a instalace</div>
+        <div class="timeline-desc">Od podpisu smlouvy s centrem po instalaci to trvá 14 dní. Zaučíme váš tým na doplňování, je to jednoduché a zvládne to každý skladník.</div>
+      </div>
+      <div class="timeline-item">
+        <div class="timeline-dot" style="background: var(--gold-light)"></div>
+        <div class="timeline-period">Den 1</div>
+        <div class="timeline-title">Spuštění a launch kampaň</div>
+        <div class="timeline-desc">Slavnostní otevření, první obsah, první tržby. Automat začíná vydělávat od prvního dne.</div>
+      </div>
+    </div>
+    <div class="servis-box reveal">
+      <div class="servis-item">
+        <div class="s-title">Záruka</div>
+        <div class="s-text">Roční záruka na automat. SMVending zajišťuje servis a opravu.</div>
+      </div>
+      <div class="servis-item">
+        <div class="s-title">Platby</div>
+        <div class="s-text">Karta, Apple Pay a Google Pay. Terminál DotypPay s poplatky 1,5 % oproti konkurenčním 2,6 % u Nayax.</div>
+      </div>
+      <div class="servis-item">
+        <div class="s-title">Co když to nefunguje?</div>
+        <div class="s-text">Automat i místo jsou snadno přenositelné. Kupec se vždy najde a investice není ztracena.</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+
+
+<script>
+  // Cursor
+  const cursor = document.getElementById('cursor');
+  const ring = document.getElementById('cursorRing');
+  let mx = 0, my = 0, rx = 0, ry = 0;
+
+  document.addEventListener('mousemove', e => {
+    mx = e.clientX; my = e.clientY;
+    cursor.style.left = mx - 4 + 'px';
+    cursor.style.top = my - 4 + 'px';
+  });
+
+  (function animRing() {
+    rx += (mx - rx) * 0.12;
+    ry += (my - ry) * 0.12;
+    ring.style.left = rx - 16 + 'px';
+    ring.style.top = ry - 16 + 'px';
+    requestAnimationFrame(animRing);
+  })();
+
+  // Reveal on scroll
+  const reveals = document.querySelectorAll('.reveal');
+  const observer = new IntersectionObserver(entries => {
+    entries.forEach(e => {
+      if (e.isIntersecting) e.target.classList.add('visible');
+    });
+  }, { threshold: 0.1 });
+
+  reveals.forEach(r => observer.observe(r));
+</script>
+</body>
+</html>
